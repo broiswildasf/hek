@@ -1,4 +1,5 @@
 const wppconnect = require("@wppconnect-team/wppconnect");
+const express = require("express"); // <-- Add this line for keep-alive
 
 const sessions = {}; // Track customer sessions per chat
 
@@ -117,4 +118,15 @@ async function startBot() {
   });
 }
 
+// Start the bot
 startBot();
+
+// ------------------- KEEP BOT ALIVE ON REPLIT -------------------
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Bot is alive ✅");
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Server running on port ${port}`));
