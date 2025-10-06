@@ -3,8 +3,7 @@ const wppconnect = require("@wppconnect-team/wppconnect");
 const sessions = {}; // Track customer sessions per chat
 
 async function startBot() {
-  // Create a unique session folder to avoid locked profile issues
-  const sessionId = `fragrance-bot-session-${Date.now()}`;
+  const sessionId = `fragrance-bot-session-${Date.now()}`; // unique session
 
   const client = await wppconnect.create({
     session: sessionId,
@@ -15,15 +14,14 @@ async function startBot() {
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-extensions",
-        "--disable-gpu",
-      ],
+        "--disable-gpu"
+      ]
     },
-    catchOwn: false,
+    catchOwn: false
   });
 
   console.log("✅ Fragrance WhatsApp bot ready!");
 
-  // Replace with your WhatsApp number (without +)
   const myNumber = process.env.WHATSAPP_NUMBER || "96181343983";
   const myChatId = myNumber + "@c.us";
 
@@ -31,42 +29,37 @@ async function startBot() {
     const chatId = msg.from;
     const text = msg.body ? msg.body.trim() : "";
 
-    // --- Step 0: Handle location pins immediately ---
+    // Handle location messages
     if (msg.type === "location") {
       if (!sessions[chatId]) sessions[chatId] = { orders: [] };
-
       const orders = sessions[chatId].orders;
+
       if (orders.length === 0 || orders[orders.length - 1].step === "CONFIRMED") {
         orders.push({ step: "WAITING_DETAILS", products: ["Fragrance"], locationPin: msg.location });
       } else {
         orders[orders.length - 1].locationPin = msg.location;
       }
 
-      // Forward location to your number
       await client.sendMessageFromContent(myChatId, {
         locationMessage: {
           degreesLatitude: msg.location.latitude,
           degreesLongitude: msg.location.longitude,
           name: msg.location.name || "Customer Location",
-          address: msg.location.address || "",
-        },
+          address: msg.location.address || ""
+        }
       });
 
       await client.sendText(chatId, "📍 Location received! You can now send your order details.");
       return;
     }
 
-    // --- Step 1: Detect new order message ---
+    // Handle order messages
     if (text.toLowerCase().includes("order")) {
       const productMatch = text.match(/order[:\- ]\s*(.*)/i);
       const productName = productMatch ? productMatch[1].trim() : "Fragrance";
 
       if (!sessions[chatId]) sessions[chatId] = { orders: [] };
-
-      sessions[chatId].orders.push({
-        step: "WAITING_DETAILS",
-        products: [productName],
-      });
+      sessions[chatId].orders.push({ step: "WAITING_DETAILS", products: [productName] });
 
       await client.sendText(
         chatId,
@@ -76,7 +69,6 @@ async function startBot() {
       return;
     }
 
-    // --- Step 2: Process template for the latest pending order ---
     const orders = sessions[chatId]?.orders;
     if (!orders || orders.length === 0) return;
 
@@ -90,10 +82,7 @@ async function startBot() {
       const phoneMatch = text.match(/phone:\s*(.*)/i);
 
       if (!quantityMatch || !locationMatch || !nameMatch || !phoneMatch) {
-        await client.sendText(
-          chatId,
-          "⚠️ Please provide all details in the format:\nQuantity:\nLocation:\nName:\nPhone:"
-        );
+        await client.sendText(chatId, "⚠️ Please provide all details in the format:\nQuantity:\nLocation:\nName:\nPhone:");
         return;
       }
 
@@ -101,11 +90,10 @@ async function startBot() {
         quantity: quantityMatch[1].trim(),
         locationText: locationMatch[1].trim(),
         customerName: nameMatch[1].trim(),
-        customerPhone: phoneMatch[1].trim(),
+        customerPhone: phoneMatch[1].trim()
       };
     }
 
-    // --- Step 3: Send summary ---
     if (session.details) {
       const order = session.details;
       const products = session.products.join(", ");
@@ -129,5 +117,4 @@ async function startBot() {
   });
 }
 
-// Start the bot
 startBot().catch(err => console.error("Bot failed to start:", err));
