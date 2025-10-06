@@ -13,13 +13,6 @@
     "@wppconnect-team/wppconnect": "^2.0.0",
     "puppeteer": "^20.8.0"
   },
-  "keywords": [
-    "whatsapp",
-    "bot",
-    "wppconnect",
-    "puppeteer",
-    "orders"
-  ],
   "author": "Your Name",
   "license": "MIT"
 }
