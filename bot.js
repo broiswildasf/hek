@@ -1,18 +1,30 @@
 const wppconnect = require("@wppconnect-team/wppconnect");
-const express = require("express"); // <-- Add this line for keep-alive
 
 const sessions = {}; // Track customer sessions per chat
 
 async function startBot() {
+  // Create a unique session folder to avoid locked profile issues
+  const sessionId = `fragrance-bot-session-${Date.now()}`;
+
   const client = await wppconnect.create({
-    session: "fragrance-bot-session",
-    puppeteerOptions: { headless: true },
+    session: sessionId,
+    puppeteerOptions: {
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-extensions",
+        "--disable-gpu",
+      ],
+    },
     catchOwn: false,
   });
 
   console.log("✅ Fragrance WhatsApp bot ready!");
 
-  const myNumber = "96181278322"; // Your WhatsApp number without +
+  // Replace with your WhatsApp number (without +)
+  const myNumber = process.env.WHATSAPP_NUMBER || "96181343983";
   const myChatId = myNumber + "@c.us";
 
   client.onMessage(async (msg) => {
@@ -58,7 +70,7 @@ async function startBot() {
 
       await client.sendText(
         chatId,
-        `🌸 You want to order "${productName}". Please provide the following details:\n\n` +
+        `📦 You want to order "${productName}". Please provide the following details:\n\n` +
         "1️⃣ Quantity:\n2️⃣ Location (text or pin):\n3️⃣ Name:\n4️⃣ Phone\n\nSend your WhatsApp location pin now if possible."
       );
       return;
@@ -99,7 +111,7 @@ async function startBot() {
       const products = session.products.join(", ");
 
       let summary = `📦 *New Fragrance Order* 📦\n------------------------\n` +
-                    `🌸 *Products:* ${products}\n` +
+                    `📦 *Products:* ${products}\n` +
                     `👤 *Customer:* ${order.customerName}\n` +
                     `☎️ *Phone:* ${order.customerPhone}\n` +
                     `📍 *Location:* ${order.locationText}\n` +
@@ -110,8 +122,7 @@ async function startBot() {
       }
 
       await client.sendText(myChatId, summary);
-
-      await client.sendText(chatId, "✅ Your fragrance order has been received. Thank you! 🌹");
+      await client.sendText(chatId, "✅ Your fragrance order has been received. Thank you! ❤️");
 
       session.step = "CONFIRMED";
     }
@@ -119,14 +130,4 @@ async function startBot() {
 }
 
 // Start the bot
-startBot();
-
-// ------------------- KEEP BOT ALIVE ON REPLIT -------------------
-const app = express();
-
-app.get("/", (req, res) => {
-  res.send("Bot is alive ✅");
-});
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
+startBot().catch(err => console.error("Bot failed to start:", err));
