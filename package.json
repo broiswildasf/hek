@@ -1,14 +1,25 @@
 {
-  "name": "fragrance-whatsapp-bot",
+  "name": "whatsapp-fragrance-bot",
   "version": "1.0.0",
-  "description": "Fragrance WhatsApp order bot",
-  "main": "bot.js",
-  "type": "module",
+  "description": "WhatsApp bot for fragrance orders using wppconnect",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "18.x"
   },
   "dependencies": {
-    "@wppconnect-team/wppconnect": "^3.21.0",
-    "express": "^4.18.2"
-  }
+    "@wppconnect-team/wppconnect": "^2.0.0",
+    "puppeteer": "^20.8.0"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "wppconnect",
+    "puppeteer",
+    "orders"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
 }
